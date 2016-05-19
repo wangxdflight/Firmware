@@ -74,7 +74,7 @@ int 	_fd;
 
 // filenames
 // /dev/fs/ is mapped to /usr/share/data/adsp/
-static const char *MIXER_FILENAME = "/dev/fs/quad_x.main.mix";
+static const char *MIXER_FILENAME = "/dev/fs/system/lib/rfsa/adsp/quad_x.main.mix";
 
 
 // publications

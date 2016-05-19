@@ -324,7 +324,7 @@ int commander_main(int argc, char *argv[])
 		daemon_task = px4_task_spawn_cmd("commander",
 					     SCHED_DEFAULT,
 					     SCHED_PRIORITY_DEFAULT + 40,
-					     3600,
+					     3600+1024,
 					     commander_thread_main,
 					     (char * const *)&argv[0]);
 
@@ -1252,7 +1252,6 @@ int commander_thread_main(int argc, char *argv[])
 
 	/* vehicle status topic */
 	memset(&status, 0, sizeof(status));
-
 	// We want to accept RC inputs as default
 	status_flags.rc_input_blocked = false;
 	status.rc_input_mode = vehicle_status_s::RC_IN_MODE_DEFAULT;
@@ -1309,7 +1308,7 @@ int commander_thread_main(int argc, char *argv[])
 
 	/* vehicle control mode topic */
 	memset(&control_mode, 0, sizeof(control_mode));
-	orb_advert_t control_mode_pub = orb_advertise(ORB_ID(vehicle_control_mode), &control_mode);
+	//orb_advert_t control_mode_pub = orb_advertise(ORB_ID(vehicle_control_mode), &control_mode);
 
 	/* home position */
 	orb_advert_t home_pub = nullptr;
@@ -1350,6 +1349,7 @@ int commander_thread_main(int argc, char *argv[])
 	}
 
 	int ret;
+	usleep(1 * 1000000);
 
 	/* Start monitoring loop */
 	unsigned counter = 0;
@@ -2720,7 +2720,7 @@ int commander_thread_main(int argc, char *argv[])
 		if (counter % (200000 / COMMANDER_MONITORING_INTERVAL) == 0 || status_changed) {
 			set_control_mode();
 			control_mode.timestamp = now;
-			orb_publish(ORB_ID(vehicle_control_mode), control_mode_pub, &control_mode);
+			//orb_publish(ORB_ID(vehicle_control_mode), control_mode_pub, &control_mode);
 
 			status.timestamp = now;
 			orb_publish(ORB_ID(vehicle_status), status_pub, &status);

@@ -208,6 +208,7 @@ DfMpu9250Wrapper::~DfMpu9250Wrapper()
 
 int DfMpu9250Wrapper::start()
 {
+    PX4_ERR("DfMpu9250Wrapper::start");
 	// TODO: don't publish garbage here
 	accel_report accel_report = {};
 	_accel_topic = orb_advertise_multi(ORB_ID(sensor_accel), &accel_report,
@@ -241,6 +242,7 @@ int DfMpu9250Wrapper::start()
 		return ret;
 	}
 
+    PX4_ERR("to MPU9250::start");
 	ret = MPU9250::start();
 
 	if (ret != 0) {

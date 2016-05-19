@@ -41,8 +41,9 @@ set(config_module_list
 	#
 	drivers/device
 	modules/sensors
-	platforms/posix/drivers/df_bmp280_wrapper
-	${EAGLE_DRIVERS_SRC}/mpu_spi
+	platforms/posix/drivers/df_mpu9250_wrapper	
+    platforms/posix/drivers/df_bmp280_wrapper
+	#${EAGLE_DRIVERS_SRC}/mpu_spi
 	${EAGLE_DRIVERS_SRC}/uart_esc
 	${EAGLE_DRIVERS_SRC}/rc_receiver
 
@@ -103,4 +104,5 @@ set(config_module_list
 
 set(config_df_driver_list
 	bmp280
+	mpu9250		
 	)

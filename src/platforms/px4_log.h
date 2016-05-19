@@ -38,7 +38,7 @@
 
 #pragma once
 
-#define _PX4_LOG_LEVEL_ALWAYS		0
+#define _PX4_LOG_LEVEL_ALWAYS		1
 #define _PX4_LOG_LEVEL_DEBUG		1
 #define _PX4_LOG_LEVEL_WARN		2
 #define _PX4_LOG_LEVEL_ERROR		3
@@ -63,7 +63,7 @@ static inline void do_nothing(int level, ...)
 #define PX4_ERR(...)	ROS_WARN(__VA_ARGS__)
 #define PX4_WARN(...) 	ROS_WARN(__VA_ARGS__)
 #define PX4_INFO(...) 	ROS_WARN(__VA_ARGS__)
-#define PX4_DEBUG(...)
+#define PX4_DEBUG(...)  ROS_WARN(__VA_ARGS__)
 #define PX4_BACKTRACE()
 
 #elif defined(__PX4_QURT)

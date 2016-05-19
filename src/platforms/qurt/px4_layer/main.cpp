@@ -82,12 +82,11 @@ static void run_cmd(map<string, px4_main_t> &apps, const vector<string> &appargs
 
 			while (i < appargs.size() && appargs[i].c_str()[0] != '\0') {
 				arg[i] = (char *)appargs[i].c_str();
-				PX4_WARN("  arg%d = '%s'\n", i, arg[i]);
+				//PX4_WARN("  arg%d = '%s'\n", i, arg[i]);
 				++i;
 			}
 
 			arg[i] = (char *)0;
-
 			//PX4_DEBUG_PRINTF(i);
 			if (apps[command] == NULL) {
 				PX4_ERR("Null function !!\n");
@@ -131,7 +130,7 @@ static void process_commands(map<string, px4_main_t> &apps, const char *cmds)
 				PX4_WARN("Processing command: %s", appargs[0].c_str());
 
 				for (int ai = 1; ai < (int)appargs.size(); ai++) {
-					PX4_WARN("   > arg: %s", appargs[ai].c_str());
+					//PX4_WARN("   > arg: %s", appargs[ai].c_str());
 				}
 
 				run_cmd(apps, appargs);
@@ -171,7 +170,7 @@ int dspal_main(int argc, char *argv[]);
 __END_DECLS
 
 
-#define COMMANDS_ADSP_FILE	"/dev/fs/px4.config"
+#define COMMANDS_ADSP_FILE	"/dev/fs/system/lib/rfsa/adsp/px4.config"
 
 const char *get_commands()
 {

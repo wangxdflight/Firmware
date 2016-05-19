@@ -194,13 +194,14 @@ bool px4muorb::KraitRpcWrapper::Initialize()
 	} else {
 		PX4_DEBUG("%s rpcmem_alloc passed for data_buffer", __FUNCTION__);
 	}
-
+#if 0//!defined(__PX4_POSIX_EXCELSIOR)
 	int32_t time_diff_us;
 
 	if (calc_timer_diff_to_dsp_us(&time_diff_us) != 0) {
 		rc = false;
 		return rc;
 	}
+#endif
 
 	// call muorb initialize routine.
 	if (px4muorb_orb_initialize() != 0) {
@@ -208,7 +209,7 @@ bool px4muorb::KraitRpcWrapper::Initialize()
 		rc = false;
 		return rc;
 	}
-
+#if 0//!defined(__PX4_POSIX_EXCELSIOR)
 	// TODO FIXME: remove this check or make it less verbose later
 	px4muorb_set_absolute_time_offset(time_diff_us);
 
@@ -220,7 +221,7 @@ bool px4muorb::KraitRpcWrapper::Initialize()
 	int diff = (time_dsp - time_appsproc);
 
 	PX4_INFO("time_dsp: %llu us, time appsproc: %llu us, diff: %d us", time_dsp, time_appsproc, diff);
-
+#endif
 	_Initialized = true;
 	return rc;
 }

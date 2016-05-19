@@ -69,7 +69,7 @@
 
 #include <crc32.h>
 
-#if 0
+#if 1
 # define debug(fmt, args...)		do { warnx(fmt, ##args); } while(0)
 #else
 # define debug(fmt, args...)		do { } while(0)
@@ -727,6 +727,7 @@ param_set_default_file(const char *filename)
 const char *
 param_get_default_file(void)
 {
+	PX4_ERR("param_default_file %s", param_default_file);
 	return (param_user_file != NULL) ? param_user_file : param_default_file;
 }
 

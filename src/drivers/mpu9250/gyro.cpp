@@ -89,7 +89,7 @@ int
 MPU9250_gyro::init()
 {
 	int ret;
-
+	DEVICE_DEBUG("MPU9250_gyro::init");
 	// do base class init
 	ret = CDev::init();
 

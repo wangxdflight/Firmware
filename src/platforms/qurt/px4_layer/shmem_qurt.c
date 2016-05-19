@@ -52,6 +52,7 @@
 int mem_fd;
 unsigned char *map_base, *virt_addr;
 struct shmem_info *shmem_info_p;
+char hack_buf[4*1024];
 static void *map_memory(off_t target);
 int get_shmem_lock(const char *caller_file_name, int caller_line_number);
 void release_shmem_lock(void);
@@ -84,8 +85,8 @@ extern struct param_wbuf_s *param_find_changed(param_t param);
 
 static void *map_memory(off_t target)
 {
-
-	return (void *)(target + LOCK_SIZE);
+	return 0;
+	//return (void *)(target + LOCK_SIZE);
 
 }
 
@@ -130,12 +131,14 @@ void release_shmem_lock(void)
 
 void init_shared_memory(void)
 {
-	//PX4_INFO("Value at lock address is %d\n", *(unsigned int*)0xfbfc000);
+	PX4_ERR("Value at lock address is 0x%x, hacked to read from local array, %d\n", MAP_ADDRESS, sizeof(hack_buf));
 
 	virt_addr = map_memory(MAP_ADDRESS);
+	//memset((unsigned char *)&hack_buf, 0, sizeof(hack_buf));
+	virt_addr = (unsigned char *)&hack_buf;
 	shmem_info_p = (struct shmem_info *)virt_addr;
 
-	//PX4_INFO("adsp memory mapped\n");
+	PX4_ERR("adsp memory mapped, size %d\n", sizeof(struct shmem_info));
 }
 
 void copy_params_to_shmem(struct param_info_s *param_info_base)
@@ -230,7 +233,7 @@ void update_index_from_shmem(void)
 		return;
 	}
 
-	PX4_DEBUG("Updating index from shmem\n");
+	//PX4_INFO("Updating index from shmem\n");
 
 	for (i = 0; i < MAX_SHMEM_PARAMS / 8 + 1; i++) {
 		// Check if any param has been changed.
@@ -315,7 +318,7 @@ int update_from_shmem(param_t param, union param_value_u *value)
 
 	//else {PX4_INFO("no change to param %s\n", param_name(param));}
 
-	PX4_DEBUG("%s %d bit on krait changed index[%d]\n", (retval) ? "cleared" : "unchanged", bit_changed, byte_changed);
+	//PX4_INFO("%s %d bit on krait changed index[%d]\n", (retval) ? "cleared" : "unchanged", bit_changed, byte_changed);
 
 	return retval;
 }

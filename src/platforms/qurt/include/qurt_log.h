@@ -37,6 +37,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 
 __BEGIN_DECLS
 
@@ -58,6 +59,7 @@ static __inline void qurt_log(int level, const char *file, int line,
 	vsnprintf(buf, sizeof(buf), format, args);
 	va_end(args);
 	HAP_debug(buf, level, file, line);
+	//usleep(1 * 1000000);
 }
 #endif
 

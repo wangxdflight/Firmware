@@ -395,7 +395,7 @@ void AttitudeEstimatorQ::task_main()
 			}
 
 			if (_mag.length() < 0.01f) {
-				warnx("WARNING: degenerate mag!");
+				//warnx("WARNING: degenerate mag!");
 				continue;
 			}
 

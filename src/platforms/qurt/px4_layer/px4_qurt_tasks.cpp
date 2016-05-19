@@ -212,6 +212,7 @@ px4_task_t px4_task_spawn_cmd(const char *name, int scheduler, int priority, int
 		PX4_ERR("px4_task_spawn_cmd: failed to set sched param");
 		return (rv < 0) ? rv : -rv;
 	}
+	PX4_INFO("to create thread, stacksize %d", attr.stacksize);
 
 	rv = pthread_create(&task, &attr, &entry_adapter, (void *) taskdata);
 

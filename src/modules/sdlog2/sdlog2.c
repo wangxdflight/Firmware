@@ -733,7 +733,7 @@ void sdlog2_start_log()
 	}
 #endif
 
-	pthread_attr_setstacksize(&logwriter_attr, 2048);
+	pthread_attr_setstacksize(&logwriter_attr, 2*2048);
 
 	logwriter_should_exit = false;
 
@@ -946,6 +946,7 @@ int sdlog2_thread_main(int argc, char *argv[])
 	/* enable logging when armed (-a option) */
 	bool log_when_armed = false;
 	log_name_timestamp = false;
+	PX4_WARN("sdlog2_thread_main running");
 
 	flag_system_armed = false;
 
@@ -1094,14 +1095,19 @@ int sdlog2_thread_main(int argc, char *argv[])
 
 	if (check_free_space() != OK) {
 		PX4_WARN("ERR: MicroSD almost full");
+		for (int i = 0; i < 10000; i ++) {
+		PX4_WARN("wait for crash...");
+		usleep(10*1000000);}
 		return 1;
 	}
 
+	PX4_WARN("to create log root dir");
 
 	/* create log root dir */
 	int mkdir_ret = mkdir(log_root, S_IRWXU | S_IRWXG | S_IRWXO);
 
 	if (mkdir_ret != 0 && errno != EEXIST) {
+		PX4_WARN("failed to create log root dir, %s", log_root);
 		warn("ERR: failed creating log dir: %s", log_root);
 		return 1;
 	}

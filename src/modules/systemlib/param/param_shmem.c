@@ -262,6 +262,7 @@ param_notify_changes(bool is_saved)
 		param_topic = orb_advertise(ORB_ID(parameter_update), &pup);
 
 	} else {
+	    PX4_INFO("orb_publish: param_notify_changes");
 		orb_publish(ORB_ID(parameter_update), param_topic, &pup);
 	}
 }
@@ -799,9 +800,9 @@ param_reset_excludes(const char *excludes[], int num_excludes)
 }
 
 #ifdef __PX4_QURT
-static const char *param_default_file = "/dev/fs/params";
+static const char *param_default_file = "/dev/fs/system/lib/rfsa/adsp/params";
 #else
-static const char *param_default_file = "/usr/share/data/adsp/params";
+static const char *param_default_file = "/system/lib/rfsa/adsp/params"; //"/usr/share/data/adsp/params";
 #endif
 static char *param_user_file = NULL;
 
@@ -823,6 +824,7 @@ param_set_default_file(const char *filename)
 const char *
 param_get_default_file(void)
 {
+	//PX4_ERR("param_default_file %s", param_default_file);
 	return (param_user_file != NULL) ? param_user_file : param_default_file;
 }
 
@@ -832,7 +834,7 @@ param_save_default(void)
 	int res = OK;
 	int fd = -1;
 	bool is_locked = false;
-
+	//PX4_ERR("param_save_default");
 	const char *filename = param_get_default_file();
 
 	if (get_shmem_lock(__FILE__, __LINE__) != 0) {
@@ -881,7 +883,7 @@ exit:
 	}
 
 	if (res == OK) {
-		PX4_INFO("saving params completed successfully");
+		//PX4_INFO("saving params completed successfully");
 	}
 
 	return res;
@@ -1245,6 +1247,7 @@ uint32_t param_hash_check(void)
 void init_params(void)
 {
 	//copy params to shared memory
+	PX4_WARN("init_shared_memory");
 	init_shared_memory();
 
 	/*load params automatically*/
@@ -1252,6 +1255,7 @@ void init_params(void)
 	param_load_default_no_notify();
 #endif
 	param_import_done = 1;
+	PX4_WARN("copy_params_to_shmem");
 
 	copy_params_to_shmem(param_info_base);
 
