@@ -342,8 +342,8 @@ int16_t uORB::Manager::process_add_subscription(const char *messageName,
 		uORB::DeviceNode *node = uORB::DeviceMaster::GetDeviceNode(nodepath);
 
 		if (node == nullptr) {
-			warnx("[posix-uORB::Manager::process_add_subscription(%d)]DeviceNode(%s) not created yet",
-			      __LINE__, messageName);
+			warnx("[posix-uORB::Manager::process_add_subscription(%d)]DeviceNode(%s) not created yet, %s",
+			      __LINE__, messageName, nodepath);
 
 		} else {
 			// node is present.

@@ -38,7 +38,7 @@
 
 #pragma once
 
-#define _PX4_LOG_LEVEL_ALWAYS		1
+#define _PX4_LOG_LEVEL_ALWAYS		0
 #define _PX4_LOG_LEVEL_DEBUG		1
 #define _PX4_LOG_LEVEL_WARN		2
 #define _PX4_LOG_LEVEL_ERROR		3

@@ -733,7 +733,7 @@ void sdlog2_start_log()
 	}
 #endif
 
-	pthread_attr_setstacksize(&logwriter_attr, 2*2048);
+	pthread_attr_setstacksize(&logwriter_attr, 2048);
 
 	logwriter_should_exit = false;
 
@@ -1095,9 +1095,6 @@ int sdlog2_thread_main(int argc, char *argv[])
 
 	if (check_free_space() != OK) {
 		PX4_WARN("ERR: MicroSD almost full");
-		for (int i = 0; i < 10000; i ++) {
-		PX4_WARN("wait for crash...");
-		usleep(10*1000000);}
 		return 1;
 	}
 

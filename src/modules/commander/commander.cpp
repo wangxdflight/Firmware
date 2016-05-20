@@ -324,7 +324,7 @@ int commander_main(int argc, char *argv[])
 		daemon_task = px4_task_spawn_cmd("commander",
 					     SCHED_DEFAULT,
 					     SCHED_PRIORITY_DEFAULT + 40,
-					     3600+1024,
+					     3600,
 					     commander_thread_main,
 					     (char * const *)&argv[0]);
 
@@ -1349,7 +1349,6 @@ int commander_thread_main(int argc, char *argv[])
 	}
 
 	int ret;
-	usleep(1 * 1000000);
 
 	/* Start monitoring loop */
 	unsigned counter = 0;
