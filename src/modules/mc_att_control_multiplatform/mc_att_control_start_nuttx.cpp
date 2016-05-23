@@ -71,7 +71,7 @@ int mc_att_control_m_main(int argc, char *argv[])
 		warnx("ok now btak running");
 		mc_att_control_daemon_task = px4_task_spawn_cmd("mc_att_control_m",
 				       SCHED_DEFAULT,
-				       SCHED_PRIORITY_MAX - 5,
+				       SCHED_PRIORITY_MAX - 15,
 				       1900,
 				       mc_att_control_start_main,
 					(argv) ? (char* const*)&argv[2] : (char* const*)NULL);

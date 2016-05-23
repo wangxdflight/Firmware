@@ -174,7 +174,7 @@ int attitude_estimator_ekf_main(int argc, char *argv[])
 		thread_should_exit = false;
 		attitude_estimator_ekf_task = px4_task_spawn_cmd("attitude_estimator_ekf",
 					      SCHED_DEFAULT,
-					      SCHED_PRIORITY_MAX - 5,
+					      SCHED_PRIORITY_MAX - 15,
 					      7700,
 					      attitude_estimator_ekf_thread_main,
 					      (argv) ? (char * const *)&argv[2] : (char * const *)NULL);

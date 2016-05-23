@@ -323,7 +323,7 @@ int commander_main(int argc, char *argv[])
 		thread_should_exit = false;
 		daemon_task = px4_task_spawn_cmd("commander",
 					     SCHED_DEFAULT,
-					     SCHED_PRIORITY_DEFAULT + 40,
+					     SCHED_PRIORITY_MAX-40,
 					     3600,
 					     commander_thread_main,
 					     (char * const *)&argv[0]);

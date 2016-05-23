@@ -2273,7 +2273,7 @@ Sensors::start()
 	/* start the task */
 	_sensors_task = px4_task_spawn_cmd("sensors",
 					   SCHED_DEFAULT,
-					   SCHED_PRIORITY_MAX - 5,
+					   SCHED_PRIORITY_MAX - 20,
 					   2000,
 					   (px4_main_t)&Sensors::task_main_trampoline,
 					   nullptr);

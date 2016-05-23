@@ -68,7 +68,7 @@ int wqueue_test_main(int argc, char *argv[])
 
 		daemon_task = px4_task_spawn_cmd("wqueue",
 						 SCHED_DEFAULT,
-						 SCHED_PRIORITY_MAX - 5,
+						 SCHED_PRIORITY_MAX - 15,
 						 2000,
 						 PX4_MAIN,
 						 (argv) ? (char *const *)&argv[2] : (char *const *)NULL);
