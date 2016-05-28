@@ -44,12 +44,11 @@
  *
  * See esc_model_t enum definition in uart_esc_dev.h for all supported ESC
  * model enum values.
+ * ESC_200QX = 0
+ * ESC_350QX = 1
+ * ESC_210QC = 2
  *
- * @value 0 ESC_200QX
- * @value 1 ESC_350QX
- * @value 2 ESC_210QC
- *
- * @group Snapdragon UART ESC
+ * Default is 210QC
  */
 PARAM_DEFINE_INT32(UART_ESC_MODEL, 2);
 
@@ -57,9 +56,8 @@ PARAM_DEFINE_INT32(UART_ESC_MODEL, 2);
  * ESC UART baud rate
  *
  * Default rate is 250Kbps, whic is used in off-the-shelf QRP ESC products.
- * @group Snapdragon UART ESC
  */
-PARAM_DEFINE_INT32(UART_ESC_BAUD, 250000);
+PARAM_DEFINE_INT32(UART_ESC_BAUDRTE, 250000);
 
 /**
  * The PX4 default motor mappings are
@@ -109,31 +107,8 @@ PARAM_DEFINE_INT32(UART_ESC_BAUD, 250000);
  * [front]
  *         1     2
  */
-
-/**
- * Motor 1 Mapping
- *
- * @group Snapdragon UART ESC
- */
 PARAM_DEFINE_INT32(UART_ESC_MOTOR1, 4);
-
-/**
- * Motor 2 Mapping
- *
- * @group Snapdragon UART ESC
- */
 PARAM_DEFINE_INT32(UART_ESC_MOTOR2, 2);
-
-/**
- * Motor 3 Mapping
- *
- * @group Snapdragon UART ESC
- */
 PARAM_DEFINE_INT32(UART_ESC_MOTOR3, 1);
-
-/**
- * Motor 4 Mapping
- *
- * @group Snapdragon UART ESC
- */
 PARAM_DEFINE_INT32(UART_ESC_MOTOR4, 3);
+

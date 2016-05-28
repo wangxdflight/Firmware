@@ -131,7 +131,7 @@ struct {
 void parameters_init()
 {
 	_parameter_handles.model 		= param_find("UART_ESC_MODEL");
-	_parameter_handles.baudrate = param_find("UART_ESC_BAUD");
+	_parameter_handles.baudrate = param_find("UART_ESC_BAUDRTE");
 
 	/* PX4 motor mapping parameters */
 	for (unsigned int i = 0; i < UART_ESC_MAX_MOTORS; i++) {
@@ -157,7 +157,7 @@ void parameters_update()
 
 	if (param_get(_parameter_handles.baudrate, &v_int) == 0) {
 		_parameters.baudrate = v_int;
-		PX4_WARN("UART_ESC_BAUD %d", _parameters.baudrate);
+		PX4_WARN("UART_ESC_BAUDRTE %d", _parameters.baudrate);
 	}
 
 	for (unsigned int i = 0; i < UART_ESC_MAX_MOTORS; i++) {
@@ -331,14 +331,14 @@ void task_main(int argc, char *argv[])
 			if (fds[0].revents & POLLIN) {
 
 				// Grab new controls data
-				orb_copy(ORB_ID(actuator_controls_0), _controls_sub, &_controls);
+				orb_copy(ORB_ID(actuator_controls), _controls_sub, &_controls);
 				// Mix to the outputs
 				_outputs.timestamp = hrt_absolute_time();
 				int16_t motor_rpms[UART_ESC_MAX_MOTORS];
 
 				if (_armed.armed) {
 					_outputs.noutputs = mixer->mix(&_outputs.output[0],
-								       actuator_controls_0_s::NUM_ACTUATOR_CONTROLS,
+								       actuator_controls_s::NUM_ACTUATOR_CONTROLS,
 								       NULL);
 
 					// Make sure we support only up to UART_ESC_MAX_MOTORS motors
