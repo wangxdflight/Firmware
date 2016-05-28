@@ -55,7 +55,7 @@
 #endif
 
 #if defined (__PX4_QURT)
-#define dprintf printf
+#define dprintf(...) (void)0
 #endif
 
 extern struct system_load_s system_load;
