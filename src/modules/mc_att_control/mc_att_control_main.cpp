@@ -826,7 +826,10 @@ MulticopterAttitudeControl::task_main()
 	fds[0].events = POLLIN;
 
 	while (!_task_should_exit) {
-
+		static uint32_t mc_poll_counter = 0;
+		mc_poll_counter ++;
+		if ((mc_poll_counter % 200) == 0)
+			warn("mc_att_control_main, poll 200 times");
 		/* wait for up to 100ms for data */
 		int pret = px4_poll(&fds[0], (sizeof(fds) / sizeof(fds[0])), 100);
 
@@ -844,7 +847,7 @@ MulticopterAttitudeControl::task_main()
 		}
 
 		perf_begin(_loop_perf);
-
+		static uint32_t control_counter = 0;
 		/* run controller on attitude changes */
 		if (fds[0].revents & POLLIN) {
 			static uint64_t last_run = 0;
@@ -861,6 +864,9 @@ MulticopterAttitudeControl::task_main()
 
 			/* copy attitude and control state topics */
 			orb_copy(ORB_ID(control_state), _ctrl_state_sub, &_ctrl_state);
+			control_counter++;
+			if ((control_counter % 200) == 0)
+				warn("ORB_ID(control_state) received 200 times");
 
 			/* check for updates in other topics */
 			parameter_update_poll();
@@ -948,6 +954,10 @@ MulticopterAttitudeControl::task_main()
 					_thrust_sp = _v_rates_sp.thrust;
 				}
 			}
+				static uint32_t mc_actuator_counter0 = 0;
+				mc_actuator_counter0 ++;
+				if ((mc_actuator_counter0 % 200) == 0)
+ 					warn("200 times, !_v_control_mode.flag_control_rates_enabled? %d", _v_control_mode.flag_control_rates_enabled);
 
 			if (_v_control_mode.flag_control_rates_enabled) {
 				control_attitude_rates(dt);
@@ -965,6 +975,10 @@ MulticopterAttitudeControl::task_main()
 				_controller_status.yaw_rate_integ = _rates_int(2);
 				_controller_status.timestamp = hrt_absolute_time();
 
+				static uint32_t mc_actuator_counter = 0;
+				mc_actuator_counter ++;
+				if ((mc_actuator_counter % 200) == 0)
+ 					warn("_actuators_id 200 times, !_actuators_0_circuit_breaker_enabled? %d", !_actuators_0_circuit_breaker_enabled);
 				if (!_actuators_0_circuit_breaker_enabled) {
 					if (_actuators_0_pub != nullptr) {
 
@@ -989,6 +1003,7 @@ MulticopterAttitudeControl::task_main()
 
 		perf_end(_loop_perf);
 	}
+	warn("mc_att_control task_main finishes");
 
 	_control_task = -1;
 	return;
@@ -1002,7 +1017,7 @@ MulticopterAttitudeControl::start()
 	/* start the task */
 	_control_task = px4_task_spawn_cmd("mc_att_control",
 					   SCHED_DEFAULT,
-					   SCHED_PRIORITY_MAX - 5,
+					   SCHED_PRIORITY_MAX - 15,
 					   1500,
 					   (px4_main_t)&MulticopterAttitudeControl::task_main_trampoline,
 					   nullptr);

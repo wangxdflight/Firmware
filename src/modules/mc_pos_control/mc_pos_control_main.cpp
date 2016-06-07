@@ -1183,6 +1183,7 @@ void MulticopterPositionControl::control_auto(float dt)
 void
 MulticopterPositionControl::task_main()
 {
+	static uint32_t att_set_counter = 0;
 
 	/*
 	 * do subscriptions
@@ -1404,6 +1405,10 @@ MulticopterPositionControl::task_main()
 				_att_sp.thrust = 0.0f;
 
 				_att_sp.timestamp = hrt_absolute_time();
+
+				att_set_counter ++;
+				if ((att_set_counter % 500) == 0)
+					PX4_ERR("ORB_ID(_attitude_setpoint_id) published 500 times");
 
 				/* publish attitude setpoint */
 				if (_att_sp_pub != nullptr) {
@@ -2096,7 +2101,7 @@ MulticopterPositionControl::start()
 	/* start the task */
 	_control_task = px4_task_spawn_cmd("mc_pos_control",
 					   SCHED_DEFAULT,
-					   SCHED_PRIORITY_MAX - 5,
+					   SCHED_PRIORITY_MAX - SCHED_PRIORITY_DEFAULT,
 					   1900,
 					   (px4_main_t)&MulticopterPositionControl::task_main_trampoline,
 					   nullptr);

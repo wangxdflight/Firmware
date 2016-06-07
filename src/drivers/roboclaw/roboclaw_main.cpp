@@ -107,7 +107,7 @@ int roboclaw_main(int argc, char *argv[])
 		thread_should_exit = false;
 		deamon_task = px4_task_spawn_cmd("roboclaw",
 						 SCHED_DEFAULT,
-						 SCHED_PRIORITY_MAX - 10,
+						 SCHED_PRIORITY_MAX - SCHED_PRIORITY_DEFAULT,
 						 2048,
 						 roboclaw_thread_main,
 						 (char *const *)argv);

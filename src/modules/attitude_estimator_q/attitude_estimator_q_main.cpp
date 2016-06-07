@@ -268,7 +268,7 @@ int AttitudeEstimatorQ::start()
 	/* start the task */
 	_control_task = px4_task_spawn_cmd("attitude_estimator_q",
 					   SCHED_DEFAULT,
-					   SCHED_PRIORITY_MAX - 5,
+					   SCHED_PRIORITY_MAX - 15,
 					   2500,
 					   (px4_main_t)&AttitudeEstimatorQ::task_main_trampoline,
 					   nullptr);
@@ -349,6 +349,10 @@ void AttitudeEstimatorQ::task_main()
 
 		if (!orb_copy(ORB_ID(sensor_combined), _sensors_sub, &sensors)) {
 			// Feed validator with recent sensor data
+			static uint32_t sensor_combined_counter = 0;
+			sensor_combined_counter ++;
+			if ((sensor_combined_counter % 500) == 0)
+				PX4_ERR("ORB_ID(sensor_combined) received 500 times");
 
 			for (unsigned i = 0; i < (sizeof(sensors.gyro_timestamp) / sizeof(sensors.gyro_timestamp[0])); i++) {
 
@@ -395,7 +399,10 @@ void AttitudeEstimatorQ::task_main()
 			}
 
 			if (_mag.length() < 0.01f) {
-				warnx("WARNING: degenerate mag!");
+				static uint32_t degenerate_counter = 0;
+				degenerate_counter ++;
+				if ((degenerate_counter % 200) == 0)
+					warnx("WARNING: degenerate mag! 200 times");
 				continue;
 			}
 
@@ -477,6 +484,10 @@ void AttitudeEstimatorQ::task_main()
 
 		bool mocap_updated = false;
 		orb_check(_mocap_sub, &mocap_updated);
+		static uint32_t vision_mocap_update_counter = 0;
+		vision_mocap_update_counter ++;
+		if ((vision_mocap_update_counter % 200) == 0)
+			warn("ORB_ID(vison_mocap) received 200 times, vision_updated %d, mocap_updated %d", vision_updated, mocap_updated);
 
 		if (vision_updated) {
 			orb_copy(ORB_ID(vision_position_estimate), _vision_sub, &_vision);
@@ -565,6 +576,10 @@ void AttitudeEstimatorQ::task_main()
 		}
 
 		if (!update(dt)) {
+			static uint32_t update_dt_counter = 0;
+			update_dt_counter ++;
+			if ((update_dt_counter % 200) == 0)
+				warn("update_dt_counter reaches 200");
 			continue;
 		}
 
@@ -602,6 +617,11 @@ void AttitudeEstimatorQ::task_main()
 
 		/* the instance count is not used here */
 		int att_inst;
+		static uint32_t vehicle_att_counter = 0;
+		vehicle_att_counter ++;
+		if ((vehicle_att_counter % 200) == 0)
+			PX4_ERR("ORB_ID(vehicle_attitude) published 200 times");
+
 		orb_publish_auto(ORB_ID(vehicle_attitude), &_att_pub, &att, &att_inst, ORB_PRIO_HIGH);
 
 		{
@@ -640,6 +660,10 @@ void AttitudeEstimatorQ::task_main()
 			int ctrl_inst;
 			/* publish to control state topic */
 			orb_publish_auto(ORB_ID(control_state), &_ctrl_state_pub, &ctrl_state, &ctrl_inst, ORB_PRIO_HIGH);
+			static uint32_t control_state_counter = 0;
+			control_state_counter ++;
+			if ((control_state_counter % 200) == 0)
+				PX4_ERR("ORB_ID(vehicle_attitude) published 200 times");
 		}
 
 		{

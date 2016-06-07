@@ -91,7 +91,7 @@ extern "C" {
 
 	int px4_open(const char *path, int flags, ...)
 	{
-		PX4_DEBUG("px4_open");
+		//PX4_ERR("px4_open %s", path);
 		VDev *dev = VDev::getDev(path);
 		int ret = 0;
 		int i;

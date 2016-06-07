@@ -66,6 +66,8 @@
 #include <mpu9250/MPU9250.hpp>
 #include <DevMgr.hpp>
 
+//#define DF_MPU9250_DEBUG
+
 // We don't want to auto publish, therefore set this to 0.
 #define MPU9250_NEVER_AUTOPUBLISH_US 0
 
@@ -701,11 +703,22 @@ int DfMpu9250Wrapper::_publish(struct imu_sensor_data &data)
 
 		if (_gyro_topic != nullptr) {
 			orb_publish(ORB_ID(sensor_gyro), _gyro_topic, &gyro_report);
+#if defined(DF_MPU9250_DEBUG)
+			static uint32_t gyro_publish_counter = 0, accel_publish_counter = 0;
+			accel_publish_counter ++;
+			if ((accel_publish_counter % 500) == 0)
+				PX4_ERR("ORB_ID(sensor_gyro) published 500 times");
+#endif
 		}
 
 		if (_accel_topic != nullptr) {
 			orb_publish(ORB_ID(sensor_accel), _accel_topic, &accel_report);
-		}
+#if defined(DF_MPU9250_DEBUG)
+			gyro_publish_counter ++;
+			if ((gyro_publish_counter % 500) == 0)
+				PX4_ERR("ORB_ID(sensor_accel) published 500 times");
+#endif
+    }
 
 		if ((_mag_topic != nullptr) && (_mag_enabled == true)) {
 			orb_publish(ORB_ID(sensor_mag), _mag_topic, &mag_report);

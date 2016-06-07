@@ -289,6 +289,8 @@ MPU9250::MPU9250(int bus, const char *path_accel, const char *path_gyro, const c
 	_gyro_scale.z_scale  = 1.0f;
 
 	memset(&_call, 0, sizeof(_call));
+	DEVICE_DEBUG("MPU9250::MPU9250");
+
 }
 
 MPU9250::~MPU9250()
@@ -330,6 +332,7 @@ int
 MPU9250::init()
 {
 	int ret;
+	DEVICE_DEBUG("MPU9250 init, to call SPI init");
 
 	/* do SPI init (and probe) first */
 	ret = SPI::init();
@@ -1148,6 +1151,7 @@ MPU9250::set_accel_range(unsigned max_g_in)
 void
 MPU9250::start()
 {
+	DEVICE_DEBUG("MPU9250::start");
 	/* make sure we are stopped first */
 	stop();
 
@@ -1283,6 +1287,7 @@ bool MPU9250::check_duplicate(uint8_t *accel_data)
 void
 MPU9250::measure()
 {
+	DEVICE_DEBUG("MPU9250::measure");
 	if (hrt_absolute_time() < _reset_wait) {
 		// we're waiting for a reset to complete
 		return;

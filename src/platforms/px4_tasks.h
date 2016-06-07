@@ -79,6 +79,7 @@ typedef int px4_task_t;
 #define SCHED_PRIORITY_MAX 255
 #define SCHED_PRIORITY_MIN 0
 #define SCHED_PRIORITY_DEFAULT 20
+#define SCHED_PRIORITY_DEFAULT_LOW 40
 #else
 #error "No target OS defined"
 #endif

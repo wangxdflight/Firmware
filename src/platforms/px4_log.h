@@ -63,7 +63,7 @@ static inline void do_nothing(int level, ...)
 #define PX4_ERR(...)	ROS_WARN(__VA_ARGS__)
 #define PX4_WARN(...) 	ROS_WARN(__VA_ARGS__)
 #define PX4_INFO(...) 	ROS_WARN(__VA_ARGS__)
-#define PX4_DEBUG(...)
+#define PX4_DEBUG(...)  ROS_WARN(__VA_ARGS__)
 #define PX4_BACKTRACE()
 
 #elif defined(__PX4_QURT)

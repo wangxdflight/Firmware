@@ -87,7 +87,7 @@ int qshell_main(int argc, char *argv[])
 
 		daemon_task = px4_task_spawn_cmd("qshell",
 						 SCHED_DEFAULT,
-						 SCHED_PRIORITY_MAX - 5,
+						 SCHED_PRIORITY_MAX - SCHED_PRIORITY_DEFAULT_LOW,
 						 8192,
 						 qshell_entry,
 						 (char *const *)argv);

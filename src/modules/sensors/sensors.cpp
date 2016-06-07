@@ -989,6 +989,7 @@ Sensors::adc_init()
 void
 Sensors::accel_poll(struct sensor_combined_s &raw)
 {
+	static uint32_t accel_poll_counter = 0;
 	for (unsigned i = 0; i < _accel_count; i++) {
 		bool accel_updated;
 		orb_check(_accel_sub[i], &accel_updated);
@@ -997,6 +998,9 @@ Sensors::accel_poll(struct sensor_combined_s &raw)
 			struct accel_report	accel_report;
 
 			orb_copy(ORB_ID(sensor_accel), _accel_sub[i], &accel_report);
+			accel_poll_counter ++;
+			if ((accel_poll_counter % 500) == 0)
+				PX4_ERR("ORB_ID(sensor_accel) received 500 times");
 
 			math::Vector<3> vect(accel_report.x, accel_report.y, accel_report.z);
 			vect = _board_rotation * vect;
@@ -1028,6 +1032,7 @@ Sensors::accel_poll(struct sensor_combined_s &raw)
 void
 Sensors::gyro_poll(struct sensor_combined_s &raw)
 {
+	static uint32_t gyro_poll_counter = 0;
 	for (unsigned i = 0; i < _gyro_count; i++) {
 		bool gyro_updated;
 		orb_check(_gyro_sub[i], &gyro_updated);
@@ -1036,6 +1041,9 @@ Sensors::gyro_poll(struct sensor_combined_s &raw)
 			struct gyro_report	gyro_report;
 
 			orb_copy(ORB_ID(sensor_gyro), _gyro_sub[i], &gyro_report);
+			gyro_poll_counter ++;
+			if ((gyro_poll_counter % 500) == 0)
+				PX4_ERR("ORB_ID(sensor_gyro) received 500 times");
 
 			math::Vector<3> vect(gyro_report.x, gyro_report.y, gyro_report.z);
 			vect = _board_rotation * vect;
@@ -1072,6 +1080,7 @@ Sensors::gyro_poll(struct sensor_combined_s &raw)
 void
 Sensors::mag_poll(struct sensor_combined_s &raw)
 {
+	uint32_t mag_poll_counter = 0;
 	for (unsigned i = 0; i < _mag_count; i++) {
 		bool mag_updated;
 		orb_check(_mag_sub[i], &mag_updated);
@@ -1080,6 +1089,9 @@ Sensors::mag_poll(struct sensor_combined_s &raw)
 			struct mag_report	mag_report;
 
 			orb_copy(ORB_ID(sensor_mag), _mag_sub[i], &mag_report);
+			mag_poll_counter ++;
+			if ((mag_poll_counter % 500) == 0)
+				PX4_ERR("ORB_ID(sensor_mag) received 500 times");
 
 			math::Vector<3> vect(mag_report.x, mag_report.y, mag_report.z);
 
@@ -1103,6 +1115,7 @@ Sensors::mag_poll(struct sensor_combined_s &raw)
 void
 Sensors::baro_poll(struct sensor_combined_s &raw)
 {
+	static uint32_t bara_poll_counter = 0;
 	for (unsigned i = 0; i < _baro_count; i++) {
 		bool baro_updated;
 		orb_check(_baro_sub[i], &baro_updated);
@@ -1110,6 +1123,9 @@ Sensors::baro_poll(struct sensor_combined_s &raw)
 		if (baro_updated) {
 
 			orb_copy(ORB_ID(sensor_baro), _baro_sub[i], &_barometer);
+			bara_poll_counter ++;
+			if ((bara_poll_counter % 500) == 0)
+				PX4_ERR("ORB_ID(sensor_baro) received 500 times");
 
 			raw.baro_pres_mbar[i] = _barometer.pressure; // Pressure in mbar
 			raw.baro_alt_meter[i] = _barometer.altitude; // Altitude in meters
@@ -1175,13 +1191,16 @@ Sensors::vehicle_control_mode_poll()
 {
 	struct vehicle_control_mode_s vcontrol_mode;
 	bool vcontrol_mode_updated;
-
+	static uint32_t vcontrol_poll_counter = 0;
 	/* Check HIL state if vehicle control mode has changed */
 	orb_check(_vcontrol_mode_sub, &vcontrol_mode_updated);
 
 	if (vcontrol_mode_updated) {
 
 		orb_copy(ORB_ID(vehicle_control_mode), _vcontrol_mode_sub, &vcontrol_mode);
+		vcontrol_poll_counter ++;
+		if ((vcontrol_poll_counter % 500) == 0)
+			PX4_ERR("ORB_ID(vehicle_control_mode) received 500 times");
 
 		/* switching from non-HIL to HIL mode */
 		if (vcontrol_mode.flag_system_hil_enabled && !_hil_enabled) {
@@ -1203,7 +1222,7 @@ void
 Sensors::parameter_update_poll(bool forced)
 {
 	bool param_updated = false;
-
+	static uint32_t parameter_update_counter = 0;
 	/* Check if any parameter has changed */
 	orb_check(_params_sub, &param_updated);
 
@@ -1211,6 +1230,9 @@ Sensors::parameter_update_poll(bool forced)
 		/* read from param to clear updated flag */
 		struct parameter_update_s update;
 		orb_copy(ORB_ID(parameter_update), _params_sub, &update);
+		parameter_update_counter ++;
+		if ((parameter_update_counter % 500) == 0)
+			PX4_ERR("ORB_ID(parameter_update) received 500 times");
 
 		/* update parameters */
 		parameters_update();
@@ -1809,6 +1831,7 @@ void
 Sensors::rc_poll()
 {
 	bool rc_updated;
+	static uint32_t rc_poll_counter = 0, rc_channels_counter = 0, actuator_counter = 0, manual_control_setpoint_counter = 0;
 	orb_check(_rc_sub, &rc_updated);
 
 	if (rc_updated) {
@@ -1816,6 +1839,9 @@ Sensors::rc_poll()
 		struct rc_input_values rc_input;
 
 		orb_copy(ORB_ID(input_rc), _rc_sub, &rc_input);
+		rc_poll_counter ++;
+		if ((rc_poll_counter % 500) == 0)
+			PX4_ERR("ORB_ID(input_rc) received 500 times");
 
 		/* detect RC signal loss */
 		bool signal_lost;
@@ -1916,6 +1942,10 @@ Sensors::rc_poll()
 		} else {
 			_rc_pub = orb_advertise(ORB_ID(rc_channels), &_rc);
 		}
+		rc_channels_counter ++;
+		if ((rc_channels_counter % 500) == 0)
+			PX4_ERR("ORB_ID(rc_channels) advertised 500 times, signal_lost? %d, rc_lost %d, failsafe %d, channel_count %d, rc_map_flightmode %d",
+				 signal_lost, rc_input.rc_lost, rc_input.rc_failsafe, rc_input.channel_count, _parameters.rc_map_flightmode);
 
 		/* only publish manual control if the signal is still present */
 		if (!signal_lost) {
@@ -1992,6 +2022,9 @@ Sensors::rc_poll()
 			} else {
 				_manual_control_pub = orb_advertise(ORB_ID(manual_control_setpoint), &manual);
 			}
+			manual_control_setpoint_counter ++;
+			if ((manual_control_setpoint_counter % 500) == 0)
+				PX4_ERR("ORB_ID(manual_control_setpoint) advertised 500 times");
 
 			/* copy from mapped manual control to control group 3 */
 			struct actuator_controls_s actuator_group_3 = {};
@@ -2022,6 +2055,10 @@ Sensors::rc_poll()
 				set_params_from_rc();
 				last_rc_to_param_map_time = hrt_absolute_time();
 			}
+			actuator_counter ++;
+			if ((actuator_counter % 500) == 0)
+				PX4_ERR("ORB_ID(actuator_controls_3) advertised 500 times, signal_lost? %d", signal_lost);
+
 		}
 	}
 }
@@ -2055,7 +2092,7 @@ Sensors::init_sensor_class(const struct orb_metadata *meta, int *subs,
 void
 Sensors::task_main()
 {
-
+	static uint32_t sensor_combined_counter = 0;
 	/* start individual sensors */
 	int ret = 0;
 
@@ -2224,6 +2261,10 @@ Sensors::task_main()
 		/* Inform other processes that new data is available to copy */
 		if (_publishing && raw.timestamp > 0) {
 			orb_publish(ORB_ID(sensor_combined), _sensor_pub, &raw);
+			sensor_combined_counter ++;
+			if ((sensor_combined_counter % 500) == 0)
+				PX4_ERR("ORB_ID(sensor_combined) received 500 times");
+
 		}
 
 		/* keep adding sensors as long as we are not armed,
@@ -2272,7 +2313,7 @@ Sensors::start()
 	/* start the task */
 	_sensors_task = px4_task_spawn_cmd("sensors",
 					   SCHED_DEFAULT,
-					   SCHED_PRIORITY_MAX - 5,
+					   SCHED_PRIORITY_MAX - SCHED_PRIORITY_DEFAULT,
 					   2000,
 					   (px4_main_t)&Sensors::task_main_trampoline,
 					   nullptr);

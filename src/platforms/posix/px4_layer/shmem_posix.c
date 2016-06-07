@@ -80,6 +80,7 @@ extern struct param_wbuf_s *param_find_changed(param_t param);
 
 static void *map_memory(off_t target)
 {
+	PX4_ERR("start to map_memory");
 
 	if ((mem_fd = open(MEMDEVICE, O_RDWR | O_SYNC)) == -1) {
 		PX4_ERR("Cannot open %s", MEMDEVICE);

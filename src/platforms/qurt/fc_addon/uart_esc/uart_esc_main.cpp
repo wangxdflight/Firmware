@@ -81,7 +81,7 @@ int		_param_sub;
 
 // filenames
 // /dev/fs/ is mapped to /usr/share/data/adsp/
-static const char *MIXER_FILENAME = "/dev/fs/mixer_config.mix";
+static const char *MIXER_FILENAME = "/dev/fs/system/lib/rfsa/adsp/mixer_config.mix";
 
 
 // publications
@@ -147,7 +147,7 @@ void parameters_init()
 
 void parameters_update()
 {
-	PX4_WARN("uart_esc_main parameters_update");
+	PX4_WARN("px4_legacy_driver: uart_esc_main parameters_update");
 	int v_int;
 
 	if (param_get(_parameter_handles.model, &v_int) == 0) {
@@ -274,8 +274,8 @@ void uart_esc_rotate_motors(int16_t *motor_rpm, int num_rotors)
 
 void task_main(int argc, char *argv[])
 {
-	PX4_INFO("enter uart_esc task_main");
-
+	static uint32_t instance_counter = 0;
+	PX4_INFO("legacy driver wrapper: uart_esc_main, enter task_main, %d", instance_counter++);
 	_outputs_pub = nullptr;
 
 	parameters_init();
@@ -287,7 +287,7 @@ void task_main(int argc, char *argv[])
 
 	} else if (esc->initialize((enum esc_model_t)_parameters.model,
 				   _device, _parameters.baudrate) < 0) {
-		PX4_ERR("failed to initialize UartEsc");
+		PX4_ERR("failed to initialize UartEsc, mode %d", _parameters.model);
 
 	} else {
 		// Subscribe for orb topics
@@ -329,6 +329,11 @@ void task_main(int argc, char *argv[])
 
 			// Handle new actuator controls data
 			if (fds[0].revents & POLLIN) {
+				static unsigned int actuator_counter = 0;
+				actuator_counter ++;
+
+				if (actuator_counter % 200 == 0)
+					PX4_ERR("actuator_controls_0 received 200 times, armed %d", _armed.armed);
 
 				// Grab new controls data
 				orb_copy(ORB_ID(actuator_controls), _controls_sub, &_controls);
@@ -425,11 +430,12 @@ void task_main_trampoline(int argc, char *argv[])
 void start()
 {
 	ASSERT(_task_handle == -1);
+	PX4_ERR("px4 legacy wrapper, uart_esc_main.cpp, start");
 
 	/* start the task */
 	_task_handle = px4_task_spawn_cmd("uart_esc_main",
 					  SCHED_DEFAULT,
-					  SCHED_PRIORITY_MAX,
+					  SCHED_PRIORITY_MAX-SCHED_PRIORITY_DEFAULT,
 					  1500,
 					  (px4_main_t)&task_main_trampoline,
 					  nullptr);

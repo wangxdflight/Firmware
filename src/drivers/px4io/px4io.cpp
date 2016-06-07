@@ -925,6 +925,7 @@ PX4IO::task_main()
 {
 	hrt_abstime poll_last = 0;
 	hrt_abstime orb_check_last = 0;
+	DEVICE_LOG("task_main");
 
 	/*
 	 * Subscribe to the appropriate PWM output topic based on whether we are the
@@ -1045,6 +1046,10 @@ PX4IO::task_main()
 
 			/* vehicle command */
 			orb_check(_t_vehicle_command, &updated);
+			static uint32_t cmd_counter = 0;
+			cmd_counter ++;
+			if ((cmd_counter % 500) == 0)
+				DEVICE_LOG("ORB_ID(vehicle_command) received 500 times");
 
 			if (updated) {
 				struct vehicle_command_s cmd;

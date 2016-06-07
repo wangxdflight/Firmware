@@ -97,6 +97,11 @@ void MulticopterLandDetector::initialize()
 
 void MulticopterLandDetector::updateSubscriptions()
 {
+	static uint32_t update_counter = 0;
+	update_counter ++;
+	if ((update_counter % 500) == 0)
+		PX4_ERR("ORB_ID(vehicle_local_position) updated 500 times");
+
 	orb_update(ORB_ID(vehicle_local_position), _vehicleLocalPositionSub, &_vehicleLocalPosition);
 	orb_update(ORB_ID(vehicle_attitude), _attitudeSub, &_vehicleAttitude);
 	orb_update(ORB_ID(actuator_controls_0), _actuatorsSub, &_actuators);

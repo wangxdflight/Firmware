@@ -342,7 +342,7 @@ uORB::DeviceNode::publish(const orb_metadata *meta, orb_advert_t handle, const v
 		errno = EIO;
 		return ERROR;
 	}
-
+#if 0
 	/*
 	 * if the write is successful, send the data over the Multi-ORB link
 	 */
@@ -355,7 +355,7 @@ uORB::DeviceNode::publish(const orb_metadata *meta, orb_advert_t handle, const v
 			return ERROR;
 		}
 	}
-
+#endif
 	return PX4_OK;
 }
 

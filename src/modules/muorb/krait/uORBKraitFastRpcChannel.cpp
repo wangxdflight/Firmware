@@ -178,7 +178,10 @@ void uORB::KraitFastRpcChannel::Start()
 	(void)pthread_attr_setschedparam(&recv_thread_attr, &param);
 
 	pthread_attr_setstacksize(&recv_thread_attr, 4096);
-
+#ifdef	__PX4_QURT
+	recv_thread_attr.priority = 235;
+#endif
+	PX4_ERR("KraitFastRpcChannel create recv thread");
 	if (pthread_create(&_RecvThread, &recv_thread_attr, thread_start, (void *)this) != 0) {
 		PX4_ERR("Error  creating the receive thread for muorb");
 

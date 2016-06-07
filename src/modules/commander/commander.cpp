@@ -317,7 +317,7 @@ int commander_main(int argc, char *argv[])
 		thread_should_exit = false;
 		daemon_task = px4_task_spawn_cmd("commander",
 					     SCHED_DEFAULT,
-					     SCHED_PRIORITY_DEFAULT + 40,
+					     SCHED_PRIORITY_MAX - SCHED_PRIORITY_DEFAULT,
 					     3600,
 					     commander_thread_main,
 					     (char * const *)&argv[0]);
@@ -1032,8 +1032,10 @@ bool handle_command(struct vehicle_status_s *status_local, const struct safety_s
 			/* ok, home set, use it to take off */
 			if (TRANSITION_CHANGED == main_state_transition(&status, commander_state_s::MAIN_STATE_AUTO_TAKEOFF, main_state_prev, &status_flags, &internal_state)) {
 				mavlink_and_console_log_info(&mavlink_log_pub, "Taking off");
+                warnx("taking off!");
 			} else {
 				mavlink_and_console_log_critical(&mavlink_log_pub, "Takeoff denied, disarm and re-try");
+                warnx("takeoff denied");
 			}
 
 		}
@@ -1043,8 +1045,10 @@ bool handle_command(struct vehicle_status_s *status_local, const struct safety_s
 			/* ok, home set, use it to take off */
 			if (TRANSITION_CHANGED == main_state_transition(&status, commander_state_s::MAIN_STATE_AUTO_LAND, main_state_prev, &status_flags, &internal_state)) {
 				mavlink_and_console_log_info(&mavlink_log_pub, "Landing at current position");
+                warnx("landing!");
 			} else {
 				mavlink_and_console_log_critical(&mavlink_log_pub, "Landing denied, land manually.");
+                warnx("landing denied");
 			}
 
 		}
@@ -1565,13 +1569,15 @@ int commander_thread_main(int argc, char *argv[])
 	(void)pthread_attr_getschedparam(&commander_low_prio_attr, &param);
 
 	/* low priority */
-	param.sched_priority = SCHED_PRIORITY_DEFAULT - 50;
 	(void)pthread_attr_setschedparam(&commander_low_prio_attr, &param);
 #endif
-
+#ifdef __PX4_QURT
+	commander_low_prio_attr.priority = SCHED_PRIORITY_MAX - 50;
+	PX4_ERR("to create commander_low_prio_thread");
+#endif
 	pthread_create(&commander_low_prio_thread, &commander_low_prio_attr, commander_low_prio_loop, NULL);
 	pthread_attr_destroy(&commander_low_prio_attr);
-
+	static uint32_t commander_counter = 0, control_counter1 = 0, control_counter2 = 0;
 	while (!thread_should_exit) {
 
 		arming_ret = TRANSITION_NOT_CHANGED;
@@ -1579,6 +1585,9 @@ int commander_thread_main(int argc, char *argv[])
 
 		/* update parameters */
 		orb_check(param_changed_sub, &updated);
+		commander_counter ++;
+		if ((commander_counter % 500) == 0)
+			PX4_ERR("ORB_ID(parameter_update) received 500 times, %d, %d", updated, param_init_forced);
 
 		if (updated || param_init_forced) {
 			param_init_forced = false;
@@ -1659,12 +1668,18 @@ int commander_thread_main(int argc, char *argv[])
 
 		if (updated) {
 			orb_copy(ORB_ID(manual_control_setpoint), sp_man_sub, &sp_man);
+			control_counter1 ++;
+			if ((control_counter1 % 2000) == 0)
+				PX4_ERR("ORB_ID(manual_control_setpoint) received 2000 times, %d", updated);
 		}
 
 		orb_check(offboard_control_mode_sub, &updated);
 
 		if (updated) {
 			orb_copy(ORB_ID(offboard_control_mode), offboard_control_mode_sub, &offboard_control_mode);
+			control_counter2 ++;
+			if ((control_counter2 % 5000) == 0)
+				PX4_ERR("ORB_ID(offboard_control_mode) received 5000 times, %d", updated);
 		}
 
 		if (offboard_control_mode.timestamp != 0 &&
@@ -1739,6 +1754,10 @@ int commander_thread_main(int argc, char *argv[])
 		}
 
 		orb_check(sensor_sub, &updated);
+		static uint32_t sensor_counter = 0;
+		sensor_counter ++;
+		if ((sensor_counter % 500) == 0)
+			PX4_ERR("ORB_ID(sensor_combined) received 500 times, %d", updated);
 
 		if (updated) {
 			orb_copy(ORB_ID(sensor_combined), sensor_sub, &sensors);
@@ -1870,6 +1889,11 @@ int commander_thread_main(int argc, char *argv[])
 		/* update global position estimate */
 		orb_check(global_position_sub, &updated);
 
+		static uint32_t position_counter = 0;
+		position_counter ++;
+		if ((position_counter % 500) == 0)
+			PX4_ERR("ORB_ID(vehicle_global_position) received 500 times, %d", updated);
+
 		if (updated) {
 			/* position changed */
 			vehicle_global_position_s gpos;
@@ -1900,6 +1924,11 @@ int commander_thread_main(int argc, char *argv[])
 
 		/* update attitude estimate */
 		orb_check(attitude_sub, &updated);
+
+		static uint32_t attitude_counter = 0;
+		attitude_counter ++;
+		if ((attitude_counter % 500) == 0)
+			PX4_ERR("ORB_ID(vehicle_attitude) received 500 times, %d", updated);
 
 		if (updated) {
 			/* position changed */
@@ -1952,6 +1981,12 @@ int commander_thread_main(int argc, char *argv[])
 		/* Update land detector */
 		static bool check_for_disarming = false;
 		orb_check(land_detector_sub, &updated);
+		static uint32_t land_counter = 0;
+		land_counter ++;
+		if ((land_counter % 500) == 0)
+			PX4_ERR("ORB_ID(vehicle_land_detected) received 500 times, %d", updated);
+
+
 		if (updated) {
 			orb_copy(ORB_ID(vehicle_land_detected), land_detector_sub, &land_detector);
 		}
@@ -2550,6 +2585,10 @@ int commander_thread_main(int argc, char *argv[])
 
 		/* handle commands last, as the system needs to be updated to handle them */
 		orb_check(actuator_controls_sub, &updated);
+		static uint32_t v_att_controls_counter = 0;
+		v_att_controls_counter ++;
+		if ((v_att_controls_counter % 500) == 0)
+			PX4_ERR("ORB_ID(ORB_ID_VEHICLE_ATTITUDE_CONTROLS) received 500 times, %d", updated);
 
 		if (updated) {
 			/* got command */
@@ -2599,6 +2638,10 @@ int commander_thread_main(int argc, char *argv[])
 
 		/* handle commands last, as the system needs to be updated to handle them */
 		orb_check(cmd_sub, &updated);
+		static uint32_t v_cmder_counter = 0;
+		v_cmder_counter ++;
+		if ((v_cmder_counter % 500) == 0)
+			PX4_ERR("ORB_ID(vehicle_command) received 500 times, %d", updated);
 
 		if (updated) {
 			/* got command */
@@ -2610,6 +2653,10 @@ int commander_thread_main(int argc, char *argv[])
 				status_changed = true;
 			}
 		}
+		static uint32_t v_armed_counter = 0, internal_state_counter = 0, internal_state_counter2 = 0;
+		v_armed_counter ++;
+		if ((v_cmder_counter % 200) == 0)
+			warnx("armed.armed? %d", armed.armed);
 
 		/* Check for failure combinations which lead to flight termination */
 		if (armed.armed) {
@@ -2636,6 +2683,9 @@ int commander_thread_main(int argc, char *argv[])
 				if (counter % (1000000 / COMMANDER_MONITORING_INTERVAL) == 0) {
 					mavlink_log_critical(&mavlink_log_pub, "DL and GPS lost: flight termination");
 				}
+				internal_state_counter ++;
+				if ((internal_state_counter % 200) == 0)
+					warnx("flight terminated after state checks, 200 times");
 			}
 
 			/* At this point the rc signal and the gps system have been checked
@@ -2661,6 +2711,9 @@ int commander_thread_main(int argc, char *argv[])
 				if (counter % (1000000 / COMMANDER_MONITORING_INTERVAL) == 0) {
 					mavlink_log_critical(&mavlink_log_pub, "RC and GPS lost: flight termination");
 				}
+				internal_state_counter2 ++;
+				if ((internal_state_counter2 % 200) == 0)
+					warnx("flight terminated after state checks(2), 500 times");
 			}
 		}
 
@@ -2716,6 +2769,10 @@ int commander_thread_main(int argc, char *argv[])
 			status_changed = true;
 			main_state_changed = false;
 		}
+		static uint32_t v_control_mode_counter = 0;
+		v_control_mode_counter ++;
+		if ((v_control_mode_counter % 100) == 0)
+			PX4_ERR("ORB_ID(vehicle_control_mode) publish ? %d", (counter % (200000 / COMMANDER_MONITORING_INTERVAL) == 0 || status_changed));
 
 		/* publish states (armed, control mode, vehicle status) at least with 5 Hz */
 		if (counter % (200000 / COMMANDER_MONITORING_INTERVAL) == 0 || status_changed) {
@@ -2741,6 +2798,11 @@ int commander_thread_main(int argc, char *argv[])
 				armed.prearmed = (hrt_elapsed_time(&commander_boot_timestamp) > 5 * 1000 * 1000);
 			}
 			orb_publish(ORB_ID(actuator_armed), armed_pub, &armed);
+			static uint32_t actuator_armed_counter = 0;
+			actuator_armed_counter ++;
+			if ((actuator_armed_counter % 200) == 0)
+				PX4_ERR("ORB_ID(actuator_armed) publish 200 times");
+
 		}
 
 		/* play arming and battery warning tunes */
